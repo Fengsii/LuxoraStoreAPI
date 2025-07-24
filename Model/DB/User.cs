@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using static LuxoraStore.Model.GeneralStatus.GeneralStatusData;
 
 namespace LuxoraStore.Model.DB
 {
@@ -13,6 +14,7 @@ namespace LuxoraStore.Model.DB
         public string Address { get; set; }
         public string Image { get; set; }
         public string Role { get; set; } // "SuperAdmin", "Customer", "Seller"
+        public GeneralStatusDataAll UserStatus { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

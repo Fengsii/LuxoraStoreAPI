@@ -1,10 +1,12 @@
-﻿using LuxoraStore.Helpers;
+﻿using FluentValidation.Results;
+using LuxoraStore.Helpers;
 using LuxoraStore.Interfaces;
 using LuxoraStore.Model;
 using LuxoraStore.Model.DTO;
 using LuxoraStore.Model.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -17,6 +19,7 @@ namespace LuxoraStore.Controllers
         private readonly IUser _user;
         private readonly ApplicationContext _context;
         private readonly JwtHelper _jwtHelper;
+        private ValidationResult _validationResult;
 
         public UserController(IUser user, ApplicationContext context, JwtHelper jwtHelper)
         {

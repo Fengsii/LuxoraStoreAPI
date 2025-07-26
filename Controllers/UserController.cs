@@ -50,7 +50,7 @@ namespace LuxoraStore.Controllers
                 //Karena ValidatorRequestUser butuh akses ke database(_context) untuk menjalankan 
                 //MustAsync(...) yang mengecek apakah Username dan Email sudah terdaftar.
                 ValidatorRequestUser validations = new ValidatorRequestUser(_context);
-                _validationResult = validations.Validate(dataEntry);
+                _validationResult = await validations.ValidateAsync(dataEntry);
 
                 if (_validationResult.IsValid)
                 {

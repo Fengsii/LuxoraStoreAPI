@@ -3,10 +3,9 @@ using LuxoraStore.Helpers;
 using LuxoraStore.Interfaces;
 using LuxoraStore.Model;
 using LuxoraStore.Model.DTO;
-using LuxoraStore.Model.Service;
+using LuxoraStore.Model.GeneralResponseStatus;
+using LuxoraStore.Validators;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,6 +19,7 @@ namespace LuxoraStore.Controllers
         private readonly ApplicationContext _context;
         private readonly JwtHelper _jwtHelper;
         private ValidationResult _validationResult;
+        private ValidationResult _loginValidator;
 
         public UserController(IUser user, ApplicationContext context, JwtHelper jwtHelper)
         {
@@ -42,11 +42,123 @@ namespace LuxoraStore.Controllers
             return "value";
         }
 
-        // POST api/<UserController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register(UserDTO dataEntry)
         {
+            try
+            {
+                //Karena ValidatorRequestUser butuh akses ke database(_context) untuk menjalankan 
+                //MustAsync(...) yang mengecek apakah Username dan Email sudah terdaftar.
+                ValidatorRequestUser validations = new ValidatorRequestUser(_context);
+                _validationResult = validations.Validate(dataEntry);
+
+                if (_validationResult.IsValid)
+                {
+                    var data = await _user.RegisterAsync(dataEntry);
+
+                    if (data)
+                    {
+                        return Ok(new GeneralRespose
+                        {
+                            StatusCode = "01",
+                            Statusdesc = "Registration successful!",
+                            Data = dataEntry
+                        }); // ✅ 200 OK
+                    }
+
+                    return StatusCode(500, new GeneralRespose
+                    {
+                        StatusCode = "2",
+                        Statusdesc = "Failed to save user data.",
+                        Data = dataEntry
+                    }); // ✅ 500 Internal Server Error
+                }
+
+                // Jika error karena duplikat username/email → 409 Conflict
+                if (_validationResult.Errors.Any(e =>
+                    e.ErrorMessage.Contains("already registered", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return Conflict(new GeneralRespose
+                    {
+                        StatusCode = "03",
+                        Statusdesc = _validationResult.ToString(),
+                        Data = dataEntry
+                    }); // ✅ 409 Conflict
+                }
+
+                // Validasi umum lainnya → 400 Bad Request
+                return BadRequest(new GeneralRespose
+                {
+                    StatusCode = "02",
+                    Statusdesc = _validationResult.ToString(),
+                    Data = dataEntry
+                }); // ✅ 400 Bad Request
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralRespose
+                {
+                    StatusCode = "99",
+                    Statusdesc = $"Failed | {ex.Message}",
+                    Data = null
+                }); // ✅ 500 Internal Server Error
+            }
         }
+
+
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(LoginDTO loginDTO)
+        {
+            try
+            {
+                LoginValidator validationRules = new LoginValidator();
+                _loginValidator = validationRules.Validate(loginDTO);
+
+                if (!_loginValidator.IsValid)
+                {
+                    return BadRequest(new GeneralRespose
+                    {
+                        StatusCode = "02",
+                        Statusdesc = _loginValidator.ToString(),
+                        Data = null
+                    }); // ✅ 400 Bad Request
+                }
+
+                var token = await _user.LoginAsync(loginDTO);
+                if (token != null)
+                {
+                    return Ok(new GeneralRespose
+                    {
+                        StatusCode = "01",
+                        Statusdesc = "Login successful!",
+                        Data = new { Token = token }
+                    }); // ✅ 200 OK
+                }
+                else
+                {
+                    return Unauthorized(new GeneralRespose
+                    {
+                        StatusCode = "401",
+                        Statusdesc = "Incorrect username or password",
+                        Data = null
+                    }); // ✅ 401 Unauthorized
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralRespose
+                {
+                    StatusCode = "500",
+                    Statusdesc = $"Failed | {ex.Message}",
+                    Data = null
+                }); // ✅ 500 Internal Server Error
+            }
+        }
+
+
+
+
+
 
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
@@ -62,144 +174,6 @@ namespace LuxoraStore.Controllers
 
 
 
-        //[HttpPost]
-        //public async Task<IActionResult> Register(UserDTO model)
-        //{
-        //    try
-        //    {
-
-        //        if (!ModelState.IsValid)
-        //        {
-        //            var errors = string.Join(", ", ModelState.Values.SelectMany(v => v.Errors));
-        //            Console.WriteLine($"Validasi gagal: {errors}");
-        //            TempData["Error"] = "Data tidak valid";
-        //            return View(model);
-        //        }
-
-        //        Console.WriteLine("Memeriksa keberadaan user...");
-        //        var userExists = await _user.UserExistsAsync(model.Username, model.Email);
-        //        if (userExists)
-        //        {
-        //            Console.WriteLine("User sudah ada");
-        //            TempData["Error"] = "Username/email sudah digunakan";
-        //            return View(model);
-        //        }
-
-
-        //        Console.WriteLine("Membuat user baru...");
-        //        var result = await _user.RegisterAsync(model);
-
-        //        if (!result)
-        //        {
-        //            Console.WriteLine("Registrasi gagal (return false)");
-        //            TempData["Error"] = "Registrasi gagal";
-        //            return View(model);
-        //        }
-
-        //        Console.WriteLine("Registrasi berhasil");
-        //        TempData["Success"] = "Registrasi berhasil! Silakan login.";
-        //        return RedirectToAction("Login");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Exception: {ex.ToString()}");
-        //        TempData["Error"] = $"Gagal registrasi: {ex.Message}";
-        //        return View(model);
-        //    }
-        //}
-
-
-        //public IActionResult Login()
-        //{
-        //    // Cek token jika ada
-        //    // Cek apakah user sudah punya token valid
-        //    if (Request.Cookies.TryGetValue("jwt_token", out var token))
-        //    {
-        //        if (_jwtHelper.ValidateToken(token))
-        //        {
-        //            // Ambil role dari cookie
-        //            if (Request.Cookies.TryGetValue("user_role", out var role))
-        //            {
-        //                return role == "Admin"
-        //                    ? RedirectToAction("Index", "DashboardAdmin")
-        //                    : RedirectToAction("Index", "DashboardUser");
-        //            }
-        //        }
-        //    }
-
-        //    // Jika tidak ada token/tidak valid, tampilkan halaman login
-        //    return View();
-        //}
-
-
-        //[HttpPost]
-        //public async Task<IActionResult> Login(LoginDTO model)
-        //{
-        //    try
-        //    {
-        //        if (!ModelState.IsValid)
-        //        {
-        //            TempData["Error"] = "Data tidak valid";
-        //            return View(model); // Kembali ke view dengan error
-        //        }
-
-        //        // Panggil service untuk login
-        //        var token = await _user.LoginAsync(model);
-        //        if (token == null)
-        //        {
-        //            TempData["Error"] = "Username/password salah";
-        //            return View(model);
-        //        }
-
-        //        // Dapatkan user dari database (untuk role)
-        //        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Username);
-        //        if (user == null)
-        //        {
-        //            TempData["Error"] = "User tidak ditemukan di database";
-        //            return View(model);
-        //        }
-
-        //        // Simpan token dan role di cookie
-        //        Response.Cookies.Append("jwt_token", token, new CookieOptions
-        //        {
-        //            HttpOnly = true,
-        //            Secure = true,
-        //            SameSite = SameSiteMode.Strict,
-        //            Expires = DateTime.Now.AddMinutes(5) // Sesuaikan dengan expiry token JWT
-        //            //Expires = DateTime.Now.AddHours(1) // Sesuaikan dengan expiry token
-        //        });
-
-        //        Response.Cookies.Append("user_role", user.Role, new CookieOptions
-        //        {
-        //            HttpOnly = false // Untuk diakses JS
-        //        });
-
-        //        // Redirect berdasarkan role
-        //        return user.Role == "Admin"
-        //            ? RedirectToAction("Index", "DashboardAdmin")
-        //            : RedirectToAction("Index", "DashboardUser");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Exception saat login: {ex}");
-        //        TempData["Error"] = $"Terjadi kesalahan saat login: {ex.Message}";
-        //        return View(model);
-        //    }
-        //}
-
-        //public IActionResult Logout()
-        //{
-        //    // Hapus cookie token
-        //    Response.Cookies.Delete("jwt_token");
-
-        //    // Hapus cookie role
-        //    Response.Cookies.Delete("user_role");
-
-        //    // Pesan berhasil logout
-        //    TempData["Success"] = "Berhasil logout";
-
-        //    // Kembali ke halaman login
-        //    return RedirectToAction("Login");
-        //}
+        
     }
 }

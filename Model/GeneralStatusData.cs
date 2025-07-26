@@ -1,4 +1,4 @@
-﻿namespace LuxoraStore.Model.GeneralStatus
+﻿namespace LuxoraStore.Model
 {
     public class GeneralStatusData
     {

@@ -22,7 +22,7 @@ namespace LuxoraStore.Helpers
             _audience = _configuration["JwtSettings:Audience"] ?? throw new ArgumentNullException("JwtSettings:Audience");
         }
 
-        public string GenerateToken(string username, string email, int userId)
+        public string GenerateToken(string username, string email, int userId, string role)
         {
 
             var expirationMinutes = int.Parse(_configuration["JwtSettings:ExpirationInMinutes"] ?? "60");
@@ -36,6 +36,7 @@ namespace LuxoraStore.Helpers
             {
                 new Claim(ClaimTypes.Name, username),
                 new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role),
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Token ID unik
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)

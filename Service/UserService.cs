@@ -1,11 +1,12 @@
 ﻿using LuxoraStore.Helpers;
 using LuxoraStore.Interfaces;
+using LuxoraStore.Model;
 using LuxoraStore.Model.DB;
 using LuxoraStore.Model.DTO;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace LuxoraStore.Model.Service
+namespace LuxoraStore.Service
 {
     public class UserService : IUser
     {
@@ -15,32 +16,6 @@ namespace LuxoraStore.Model.Service
         {
             _context = context;
             _jwtHelper = jwtHelper;
-        }
-
-        public async Task<string?> LoginAsync(LoginDTO loginDTO)
-        {
-            try
-            {
-                // Mencari user berdasarkan username
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == loginDTO.Username);
-
-                if (user == null)
-                    return null; // User tidak ditemukan
-
-                // Verifikasi password
-                if (!VerifyPassword(loginDTO.Password, user.Password))
-                    return null; // Password salah
-
-                // Generate JWT Token
-                var token = _jwtHelper.GenerateToken(user.Username, user.Email, user.Id);
-                return token;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[LoginAsync Error] {ex}");
-                throw new Exception("Terjadi kesalahan saat login", ex);
-            }
         }
 
         public async Task<bool> UserExistsAsync(string username, string email)
@@ -85,6 +60,32 @@ namespace LuxoraStore.Model.Service
                 await transaction.RollbackAsync();
                 Console.WriteLine($"[RegisterAsync Error] {ex}");
                 throw new Exception("Terjadi kesalahan saat registrasi", ex);
+            }
+        }
+
+        public async Task<string?> LoginAsync(LoginDTO loginDTO)
+        {
+            try
+            {
+                // Mencari user berdasarkan username
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Username == loginDTO.Username);
+
+                if (user == null)
+                    return null; // User tidak ditemukan
+
+                // Verifikasi password
+                if (!VerifyPassword(loginDTO.Password, user.Password))
+                    return null; // Password salah
+
+                // Generate JWT Token
+                var token = _jwtHelper.GenerateToken(user.Username, user.Email, user.Id, user.Role);
+                return token;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LoginAsync Error] {ex}");
+                throw new Exception("Terjadi kesalahan saat login", ex);
             }
         }
 

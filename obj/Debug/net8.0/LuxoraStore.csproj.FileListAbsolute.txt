@@ -142,3 +142,6 @@ C:\Users\DELL 7390\Documents\CSharp Lanjutan\LuxoraStore\obj\Debug\net8.0\Luxora
 C:\Users\DELL 7390\Documents\CSharp Lanjutan\LuxoraStore\obj\Debug\net8.0\LuxoraStore.genruntimeconfig.cache
 C:\Users\DELL 7390\Documents\CSharp Lanjutan\LuxoraStore\obj\Debug\net8.0\ref\LuxoraStore.dll
 C:\Users\DELL 7390\Documents\CSharp Lanjutan\LuxoraStore\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\DELL 7390\Documents\CSharp Lanjutan\LuxoraStore\bin\Debug\net8.0\FluentValidation.dll
+C:\Users\DELL 7390\Documents\CSharp Lanjutan\LuxoraStore\bin\Debug\net8.0\FluentValidation.AspNetCore.dll
+C:\Users\DELL 7390\Documents\CSharp Lanjutan\LuxoraStore\bin\Debug\net8.0\FluentValidation.DependencyInjectionExtensions.dll

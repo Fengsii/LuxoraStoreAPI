@@ -1,7 +1,7 @@
 using LuxoraStore.Helpers;
 using LuxoraStore.Interfaces;
 using LuxoraStore.Model;
-using LuxoraStore.Model.Service;
+using LuxoraStore.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

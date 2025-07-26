@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using static LuxoraStore.Model.GeneralStatus.GeneralStatusData;
+using static LuxoraStore.Model.GeneralStatusData;
 
 namespace LuxoraStore.Model.DB
 {

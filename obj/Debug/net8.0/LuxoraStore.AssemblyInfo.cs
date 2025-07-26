@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LuxoraStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+46aa7075a23790c95e12fef93caefeaacd600152")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c6da81db1b9f8aea9d307de8e0e7a9147415c89")]
 [assembly: System.Reflection.AssemblyProductAttribute("LuxoraStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LuxoraStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

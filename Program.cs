@@ -49,8 +49,10 @@ builder.Services.AddAuthentication(options =>
 
 // Registrasi Services
 builder.Services.AddScoped<JwtHelper>();
-builder.Services.AddHttpContextAccessor(); // Untuk mengakses HttpContext
 builder.Services.AddScoped<IUser, UserService>();
+//Untuk bisa menyetel cookie dari service, kamu perlu mengakses HttpContext, 
+//dan cara paling umum adalah menyuntikkan IHttpContextAccessor ke dalam service kamu.
+builder.Services.AddHttpContextAccessor(); // Untuk mengakses HttpContext
 
 
 

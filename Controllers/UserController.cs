@@ -5,6 +5,7 @@ using LuxoraStore.Model;
 using LuxoraStore.Model.DTO;
 using LuxoraStore.Model.GeneralResponseStatus;
 using LuxoraStore.Validators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -41,7 +42,7 @@ namespace LuxoraStore.Controllers
         {
             return "value";
         }
-
+       
         [HttpPost("Register")]
         public async Task<IActionResult> Register(UserDTO dataEntry)
         {
@@ -154,9 +155,6 @@ namespace LuxoraStore.Controllers
                 }); // ✅ 500 Internal Server Error
             }
         }
-
-
-
 
 
 

@@ -1,9 +1,11 @@
-﻿using LuxoraStore.Helpers;
+﻿using Azure;
+using LuxoraStore.Helpers;
 using LuxoraStore.Interfaces;
 using LuxoraStore.Model;
 using LuxoraStore.Model.DB;
 using LuxoraStore.Model.DTO;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace LuxoraStore.Service
@@ -12,10 +14,12 @@ namespace LuxoraStore.Service
     {
         private readonly ApplicationContext _context;
         private readonly JwtHelper _jwtHelper;
-        public UserService(ApplicationContext context, JwtHelper jwtHelper)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public UserService(ApplicationContext context, JwtHelper jwtHelper, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _jwtHelper = jwtHelper;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<bool> UserExistsAsync(string username, string email)
@@ -46,6 +50,7 @@ namespace LuxoraStore.Service
                     PhoneNumber = "",
                     Address = "",
                     Image = "",
+                    UserStatus = GeneralStatusData.GeneralStatusDataAll.Published,
                     CreatedAt = DateTime.Now
                 };
 
@@ -80,6 +85,25 @@ namespace LuxoraStore.Service
 
                 // Generate JWT Token
                 var token = _jwtHelper.GenerateToken(user.Username, user.Email, user.Id, user.Role);
+
+                var httpContext = _httpContextAccessor.HttpContext;
+
+                // Simpan token dan role di cookie
+                httpContext?.Response.Cookies.Append("jwt_token", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.Now.AddMinutes(5) // Sesuaikan dengan expiry token JWT
+                    //Expires = DateTime.Now.AddHours(1) // Sesuaikan dengan expiry token
+                });
+
+                httpContext?.Response.Cookies.Append("user_role", user.Role, new CookieOptions
+                {
+                    HttpOnly = false // Untuk diakses JS
+                });
+
+
                 return token;
             }
             catch (Exception ex)
@@ -89,6 +113,46 @@ namespace LuxoraStore.Service
             }
         }
 
+        public List<UserDTO> GetAllUser()
+        {
+            var data = _context.Users.Where(x => x.UserStatus != GeneralStatusData.GeneralStatusDataAll.delete && x.Id != 1).Select(x => new UserDTO
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Username = x.Username,
+                Email = x.Email,
+                PhoneNumber = x.PhoneNumber,
+                Address = x.Address,
+                Password = "*******",
+                UserStatus = x.UserStatus
+
+            }).ToList();
+            return data;
+        }
+
+        public User GetUserById(int id)
+        {
+            var data = _context.Users.Where(x => x.Id == id && x.UserStatus != GeneralStatusData.GeneralStatusDataAll.delete).FirstOrDefault();
+            if (data == null)
+            {
+                return new User();
+            }
+
+            return data;
+        }
+
+        public bool DeleteUser(int id)
+        {
+            var data = _context.Users.FirstOrDefault(x => x.Id == id);
+            if (data == null)
+            {
+                return false;
+            }
+
+            data.UserStatus = GeneralStatusData.GeneralStatusDataAll.delete;
+            _context.SaveChanges();
+            return true;
+        }
 
         // Method untuk hash password menggunakan SHA256 (sederhana untuk contoh)
         // Untuk production, gunakan BCrypt atau Argon2

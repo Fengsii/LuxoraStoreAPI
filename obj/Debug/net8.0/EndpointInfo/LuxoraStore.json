@@ -209,6 +209,15 @@
   },
   "components": {
     "schemas": {
+      "GeneralStatusDataAll": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "LoginDTO": {
         "type": "object",
         "properties": {
@@ -257,6 +266,9 @@
           "image": {
             "type": "string",
             "nullable": true
+          },
+          "userStatus": {
+            "$ref": "#/components/schemas/GeneralStatusDataAll"
           }
         },
         "additionalProperties": false

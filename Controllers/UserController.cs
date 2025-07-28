@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LuxoraStore.Controllers
 {
+    // Tambahkan ini ke atas controller untuk
+    // mengamankan semua endpoint secara default
+    
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -42,7 +45,8 @@ namespace LuxoraStore.Controllers
         {
             return "value";
         }
-       
+
+        [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<IActionResult> Register(UserDTO dataEntry)
         {
@@ -106,7 +110,7 @@ namespace LuxoraStore.Controllers
             }
         }
 
-
+        [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginDTO loginDTO)
         {
@@ -157,6 +161,18 @@ namespace LuxoraStore.Controllers
         }
 
 
+        // ENDPOINT UNTUK CUSTOMER SAJA
+        //[Authorize]
+        [Authorize(Roles = "Customer")]
+        [HttpGet("customer-only")]
+        public IActionResult CustomerOnlyEndpoint()
+        {
+            return Ok(new
+            {
+                Message = "Halo Customer, ini endpoint khusus untukmu."
+            });
+        }
+
 
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
@@ -170,8 +186,5 @@ namespace LuxoraStore.Controllers
         {
         }
 
-
-
-        
     }
 }

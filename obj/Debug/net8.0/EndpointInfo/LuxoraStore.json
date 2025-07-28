@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "LuxoraStore",
-    "version": "1.0"
+    "title": "LuxoraStore API",
+    "version": "v1"
   },
   "paths": {
     "/api/User": {
@@ -205,6 +205,18 @@
           }
         }
       }
+    },
+    "/api/User/customer-only": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -273,6 +285,19 @@
         },
         "additionalProperties": false
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Masukkan token JWT Anda di sini. Contoh: Bearer {token}",
+        "name": "Authorization",
+        "in": "header"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
 }

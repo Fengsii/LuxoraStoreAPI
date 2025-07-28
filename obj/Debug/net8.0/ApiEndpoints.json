@@ -96,6 +96,16 @@
   },
   {
     "ContainingType": "LuxoraStore.Controllers.UserController",
+    "Method": "CustomerOnlyEndpoint",
+    "RelativePath": "api/User/customer-only",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LuxoraStore.Controllers.UserController",
     "Method": "Login",
     "RelativePath": "api/User/Login",
     "HttpMethod": "POST",

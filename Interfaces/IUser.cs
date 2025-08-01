@@ -7,5 +7,8 @@ namespace LuxoraStore.Interfaces
         Task<string?> LoginAsync(LoginDTO loginDTO);
         Task<bool> RegisterAsync(UserDTO userDTO);
         Task<bool> UserExistsAsync(string username, string email);
+        Task<bool> SendOtpAsync(string emailOrUsername);
+        Task<bool> ResetPasswordWithOtpAsync(VerifyOtpAndResetPasswordDTO dto);
+        Task<bool> UpdateUserProfile(UserDTO userDTO, IFormFile? image);
     }
 }

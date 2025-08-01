@@ -11,7 +11,7 @@ namespace LuxoraStore.Model.DTO
         public string Email { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
-        public string Image { get; set; } = string.Empty;
+        public IFormFile? Image { get; set; } 
         public GeneralStatusDataAll UserStatus { get; set; }
     }
 }

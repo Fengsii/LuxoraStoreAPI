@@ -50,11 +50,15 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Registrasi Services
-builder.Services.AddScoped<JwtHelper>();
-builder.Services.AddScoped<IUser, UserService>();
 //Untuk bisa menyetel cookie dari service, kamu perlu mengakses HttpContext, 
 //dan cara paling umum adalah menyuntikkan IHttpContextAccessor ke dalam service kamu.
 builder.Services.AddHttpContextAccessor(); // Untuk mengakses HttpContext
+builder.Services.AddSingleton<IJwtHelper, JwtHelper>();
+builder.Services.AddHostedService<OtpCleanupHelper>();
+builder.Services.AddScoped<IEmailHelper, EmailHelper>();
+builder.Services.AddScoped<IImageHelper, ImageHelper>();
+builder.Services.AddScoped<IUser, UserService>();
+
 
 
 
@@ -128,6 +132,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 // ? Tambahkan ini sebelum UseAuthorization
 app.UseAuthentication();

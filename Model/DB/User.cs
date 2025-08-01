@@ -18,6 +18,10 @@ namespace LuxoraStore.Model.DB
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+        // OTP Fields
+        public string? OtpCode { get; set; }
+        public DateTime? OtpExpiredAt { get; set; }
+
         // Navigation properties
         //public SellerProfile SellerProfile { get; set; }
         //public Wallet Wallet { get; set; }

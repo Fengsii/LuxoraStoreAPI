@@ -21,11 +21,11 @@ namespace LuxoraStore.Controllers
     {
         private readonly IUser _user;
         private readonly ApplicationContext _context;
-        private readonly JwtHelper _jwtHelper;
+        private readonly IJwtHelper _jwtHelper;
         private ValidationResult _validationResult;
         private ValidationResult _loginValidator;
 
-        public UserController(IUser user, ApplicationContext context, JwtHelper jwtHelper)
+        public UserController(IUser user, ApplicationContext context, IJwtHelper jwtHelper)
         {
             _user = user;
             _context = context;
@@ -68,7 +68,7 @@ namespace LuxoraStore.Controllers
                             StatusCode = "01",
                             Statusdesc = "Registration successful!",
                             Data = dataEntry
-                        }); // ✅ 200 OK
+                        }); // 200 OK
                     }
 
                     return StatusCode(500, new GeneralRespose
@@ -76,7 +76,7 @@ namespace LuxoraStore.Controllers
                         StatusCode = "2",
                         Statusdesc = "Failed to save user data.",
                         Data = dataEntry
-                    }); // ✅ 500 Internal Server Error
+                    }); // 500 Internal Server Error
                 }
 
                 // Jika error karena duplikat username/email → 409 Conflict
@@ -88,7 +88,7 @@ namespace LuxoraStore.Controllers
                         StatusCode = "03",
                         Statusdesc = _validationResult.ToString(),
                         Data = dataEntry
-                    }); // ✅ 409 Conflict
+                    }); // 409 Conflict
                 }
 
                 // Validasi umum lainnya → 400 Bad Request
@@ -97,7 +97,7 @@ namespace LuxoraStore.Controllers
                     StatusCode = "02",
                     Statusdesc = _validationResult.ToString(),
                     Data = dataEntry
-                }); // ✅ 400 Bad Request
+                }); // 400 Bad Request
             }
             catch (Exception ex)
             {
@@ -106,7 +106,7 @@ namespace LuxoraStore.Controllers
                     StatusCode = "99",
                     Statusdesc = $"Failed | {ex.Message}",
                     Data = null
-                }); // ✅ 500 Internal Server Error
+                }); // 500 Internal Server Error
             }
         }
 
@@ -126,7 +126,7 @@ namespace LuxoraStore.Controllers
                         StatusCode = "02",
                         Statusdesc = _loginValidator.ToString(),
                         Data = null
-                    }); // ✅ 400 Bad Request
+                    }); 
                 }
 
                 var token = await _user.LoginAsync(loginDTO);
@@ -137,7 +137,7 @@ namespace LuxoraStore.Controllers
                         StatusCode = "01",
                         Statusdesc = "Login successful!",
                         Data = new { Token = token }
-                    }); // ✅ 200 OK
+                    }); 
                 }
                 else
                 {
@@ -146,7 +146,7 @@ namespace LuxoraStore.Controllers
                         StatusCode = "401",
                         Statusdesc = "Incorrect username or password",
                         Data = null
-                    }); // ✅ 401 Unauthorized
+                    }); 
                 }
             }
             catch (Exception ex)
@@ -156,9 +156,131 @@ namespace LuxoraStore.Controllers
                     StatusCode = "500",
                     Statusdesc = $"Failed | {ex.Message}",
                     Data = null
-                }); // ✅ 500 Internal Server Error
+                }); 
             }
         }
+
+        [Authorize(Roles = "Customer")]
+        [HttpPut("update-profile")]
+        public async Task<IActionResult> UpdateUser([FromForm] UserDTO userDTO, IFormFile? image)
+        {
+            try
+            {
+                var result = await _user.UpdateUserProfile(userDTO, image);
+                if (!result)
+                {
+                    return BadRequest(new GeneralResponse
+                    {
+                        StatusCode = "02",
+                        Statusdesc = "Gagal update data user.",
+                        Data = userDTO
+                    });
+                }
+
+                return Ok(new GeneralResponse
+                {
+                    StatusCode = "01",
+                    Statusdesc = "Berhasil update data user.",
+                    Data = userDTO
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Error dari ImageHelper (validasi ukuran/format)
+                return BadRequest(new GeneralResponse
+                {
+                    StatusCode = "03",
+                    Statusdesc = $"Gagal upload gambar: {ex.Message}",
+                    Data = null
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse
+                {
+                    StatusCode = "500",
+                    Statusdesc = "Terjadi kesalahan internal server.",
+                    Data = null
+                });
+            }
+        }
+
+
+        //============================ FORGOT PASSWORD ============================\\
+
+        [AllowAnonymous]
+        [HttpPost("Forgot-Password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequestDTO request)
+        {
+            try
+            {
+                var result = await _user.SendOtpAsync(request.EmailOrUsername);
+                if (result)
+                {
+                    return Ok(new GeneralResponse
+                    {
+                        StatusCode = "01",
+                        Statusdesc = "OTP telah dikirim ke email kamu.",
+                        Data = request.EmailOrUsername
+                    });
+                }
+
+                return NotFound(new GeneralResponse
+                {
+                    StatusCode = "404",
+                    Statusdesc = "User tidak ditemukan atau email tidak tersedia.",
+                    Data = request.EmailOrUsername
+                });
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, new GeneralResponse
+                {
+                    StatusCode = "500",
+                    Statusdesc = "Terjadi kesalahan internal server. Silakan coba lagi nanti.",
+                    Data = null
+                });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(VerifyOtpAndResetPasswordDTO request)
+        {
+            try
+            {
+                var result = await _user.ResetPasswordWithOtpAsync(request);
+                if (result)
+                {
+                    return Ok(new GeneralResponse
+                    {
+                        StatusCode = "01",
+                        Statusdesc = "Password berhasil direset.",
+                        Data = null
+                    });
+                }
+
+                return BadRequest(new GeneralResponse
+                {
+                    StatusCode = "02",
+                    Statusdesc = "OTP salah atau sudah kadaluarsa.",
+                    Data = null
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ResetPassword Error] {ex.Message}");
+
+                return StatusCode(500, new GeneralResponse
+                {
+                    StatusCode = "500",
+                    Statusdesc = $"Terjadi kesalahan pada server: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
+
 
 
         // ENDPOINT UNTUK CUSTOMER SAJA

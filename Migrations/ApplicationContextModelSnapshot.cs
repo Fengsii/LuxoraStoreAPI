@@ -49,6 +49,12 @@ namespace LuxoraStore.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("OtpCode")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("OtpExpiredAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -80,14 +86,14 @@ namespace LuxoraStore.Migrations
                         {
                             Id = 1,
                             Address = "Bandung",
-                            CreatedAt = new DateTime(2025, 7, 26, 12, 18, 58, 921, DateTimeKind.Utc).AddTicks(3991),
+                            CreatedAt = new DateTime(2025, 8, 1, 1, 26, 26, 232, DateTimeKind.Utc).AddTicks(9568),
                             Email = "admin@example.com",
                             Image = "default-product.png.jpeg",
                             Name = "Administrator",
-                            Password = "$2b$10$MjACVNV4YNUGhs3TphXVnuisiuxr1KkyEG2Cfs/iQlCmURb5N7kTK",
+                            Password = "$2b$10$7MlExdXLzNDN431Tusj7p.QYMXfniRo/f1PLTgTKgYgvGGA0R0BuK",
                             PhoneNumber = "081267874199",
                             Role = "Admin",
-                            UpdatedAt = new DateTime(2025, 7, 26, 12, 18, 58, 673, DateTimeKind.Utc).AddTicks(7877),
+                            UpdatedAt = new DateTime(2025, 8, 1, 1, 26, 26, 42, DateTimeKind.Utc).AddTicks(299),
                             UserStatus = 0,
                             Username = "admin"
                         });
